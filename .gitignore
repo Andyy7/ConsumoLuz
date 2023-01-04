@@ -1,0 +1,6 @@
+
+# Archivos de texto
+*.txt
+
+# Archivos de Base de datos
+*.db
