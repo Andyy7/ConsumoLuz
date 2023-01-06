@@ -6,42 +6,17 @@ import os
 import os.path
 
 
-class ResumenMensual(tk.Toplevel):
-    en_uso=False
-
-    def __init__(self,*args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.config(width=300, height=300)
-        self.title("Resumen Mensual")
-    
-        self.boton_cerrar=tk.Button(
-            self,
-            text="Cerrar ventana",
-            command=self.destroy
-        )
-        self.boton_cerrar.place(x=205,y=265)
-        self.__class__.en_uso=True    
-    
-    def destroy(self):
-        self.__class__.en_uso=False
-        return super().destroy()    
-
-class NuevoConsumo(tk.Toplevel):
-    en_uso=False
-    
+class VentanaPrincipal(tk.Tk):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.config(width=300,height=300)
-        self.title("Nuevo Consumo")
+        self.config(width=800,height=300)
+        self.title("Registro Consumo Luz")
+        
+        #Verifica que exista la base de datos, de lo contrario llama a la funcion que se ocupa de crearla.
+        if os.path.isfile("registo_luz.db")==False:
+            self.crear_base_datos()
 
-
-        self.boton_cerrar=tk.Button(
-            self,
-            text="Cerrar ventana",
-            command=self.destroy
-        )
-        self.boton_cerrar.place(x=205,y=265)
-        self.__class__.en_uso=True
+        #Sección para agregar lecturas nuevas
 
         self.etiqueta_lectura=ttk.Label(
             self,
@@ -89,45 +64,7 @@ class NuevoConsumo(tk.Toplevel):
             else:
                 chequeo.append(letra.isdecimal())
         return all(chequeo)
-
-    def destroy(self):
-        self.__class__.en_uso=False
-        return super().destroy()
-
-#########################################################################################
-
-class VentanaPrincipal(tk.Tk):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.config(width=800,height=300)
-        self.title("Registro Consumo Luz")
-        
-        self.boton_nuevo_consumo=ttk.Button(
-            self,
-            text="Nuevo Consumo",
-            command=self.abrir_nuevo_consumo
-            )
-        self.boton_nuevo_consumo.place(x=270,y=45,width=110, height=25)
-
-        self.boton_nuevo_consumo=ttk.Button(
-            self,
-            text="Resumen Mensual",
-            command=self.abrir_resumen_mensual
-            )
-        self.boton_nuevo_consumo.place(x=400,y=45,width=110, height=25)
-
-        #Verifica que exista la base de datos, de lo contrario llama a la funcion que se ocupa de crearla.
-        if os.path.isfile("registo_luz.db")==False:
-            self.crear_base_datos()
-
-    def abrir_resumen_mensual(self):
-        if not ResumenMensual.en_uso:
-            self.resumen_mensual=ResumenMensual()
-
-    def abrir_nuevo_consumo(self):
-        if not NuevoConsumo.en_uso:
-            self.nuevo_consumo=NuevoConsumo()
-    
+  
     def crear_base_datos(self):
         conn=sqlite3.connect(f'registo_luz.db')
         cursor=conn.cursor()
@@ -137,8 +74,6 @@ class VentanaPrincipal(tk.Tk):
         except sqlite3.OperationalError:
             # silenciar la excepción
             pass
-
-
 
 ventana_principal=VentanaPrincipal()
 ventana_principal.mainloop()
