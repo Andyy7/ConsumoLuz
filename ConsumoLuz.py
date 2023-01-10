@@ -65,32 +65,16 @@ class VentanaPrincipal(tk.Tk):
         for fecha in todas_las_fechas:
             fechas.append(fecha[0])
 
-
-        fecha_inicio=fechas[0]
-        # La fecha esta en formato str, realizo un slicing y obtengo los días que inician las lecturas, las cuales coiciden con el corte bimestral de los consumos.
-        dia_fecha=fecha_inicio[8:]
-        mes_fecha_int=int(fecha_inicio[5:7])
-        año_fecha_int=int(fecha_inicio[:4])
-
-        if mes_fecha_int<12:
-            mes_fecha_int+=2
-            mes_fecha_str=str(mes_fecha_int)
-            if mes_fecha_int<10:
-                mes_fecha_str="0"+str(mes_fecha_int)
-        else:
-            mes_fecha_str="02"
-            año_fecha_int+=1
-
-            
-        fecha_fin=f"{año_fecha_int}-{mes_fecha_str}-{dia_fecha}"     
-        # fecha_fin=(datetime.strptime(fecha_inicio, '%Y-%m-%d')+ timedelta(61)).strftime('%Y-%m-%d')
-        # x=0
+        fecha_inicio=fechas[0]        
+        fecha_fin=self.calcular_fecha_fin(fecha_inicio)
+        año_fecha_int=int(fecha_fin[:4])     
+        mes_fecha_str=fecha_fin[5:7]
         promedios={}
 
         consumos_mensuales_2=[]
         consumos_año_periodo={}
         if mes_fecha_str!="02":
-            cantidad=int(mes_fecha_int/2)-1
+            cantidad=int(int(mes_fecha_str)/2)-1
             for i in range(cantidad):
                 consumos_mensuales_2.append(0)
 
@@ -131,26 +115,14 @@ class VentanaPrincipal(tk.Tk):
                 consumo_bimestral=round(sum(consumos))
                 consumos_mensuales_2.append(consumo_bimestral)
             
-            fecha_inicio=fecha_fin
-            dia_fecha=fecha_inicio[8:]
-            mes_fecha_int=int(fecha_inicio[5:7])
-            año_fecha_int=int(fecha_inicio[:4])
-
             if periodo==6:
                consumos_año_periodo[f'año_{año_fecha_int}']=consumos_mensuales_2
                consumos_mensuales_2=[]
 
-            if mes_fecha_int<12:
-                mes_fecha_int+=2
-                mes_fecha_str=str(mes_fecha_int)
-                if mes_fecha_int<10:
-                    mes_fecha_str="0"+str(mes_fecha_int)
-            else:
-                mes_fecha_str="02"
-                año_fecha_int+=1
-                
-
-            fecha_fin=f"{año_fecha_int}-{mes_fecha_str}-{dia_fecha}"
+            fecha_inicio=fecha_fin          
+            fecha_fin=self.calcular_fecha_fin(fecha_inicio)
+            año_fecha_int=int(fecha_fin[:4])     
+            mes_fecha_str=fecha_fin[5:7]
 
         ########### Fin del cálculo de los bimestres cerrados.
 
@@ -213,7 +185,7 @@ class VentanaPrincipal(tk.Tk):
         )
         self.etiqueta_promedio_actual.place(x=20, y=150)
         print(consumos_año_periodo)
-       #Sección para realizar el gráfico de barra del consumo mensual o bimestral. 
+       #Sección para realizar el gráfico de barra del consumo bimestral. 
     
         clave=list(consumos_año_periodo.keys())
 
@@ -240,7 +212,22 @@ class VentanaPrincipal(tk.Tk):
         ############### FIN SECCION GRAFICO ################
 
  
-
+    def calcular_fecha_fin(self,dato):
+        # La fecha esta en formato str, realizo un slicing y obtengo los días que inician las lecturas, las cuales coiciden con el corte bimestral de los consumos.
+        dia_fecha=dato[8:]
+        mes_fecha_int=int(dato[5:7])
+        año_fecha_int=int(dato[:4])
+        
+        if mes_fecha_int<12:
+            mes_fecha_int+=2
+            mes_fecha_str=str(mes_fecha_int)
+            if mes_fecha_int<10:
+                mes_fecha_str="0"+str(mes_fecha_int)
+        else:
+            mes_fecha_str="02"
+            año_fecha_int+=1
+        
+        return f"{año_fecha_int}-{mes_fecha_str}-{dia_fecha}"
 
     def validar_numeros(self, texto):
         if texto=="":
