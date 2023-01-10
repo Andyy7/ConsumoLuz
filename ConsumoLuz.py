@@ -4,12 +4,15 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import os
 import os.path
-
-
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
+import numpy as np
+import pandas as pd
 class VentanaPrincipal(tk.Tk):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.config(width=800,height=300)
+        self.config(width=1040,height=720)
         self.title("Registro Consumo Luz")
         
         #Verifica que exista la base de datos, de lo contrario llama a la funcion que se ocupa de crearla.
@@ -52,12 +55,7 @@ class VentanaPrincipal(tk.Tk):
         self.boton_agregar_lectura.place(x=550,y=45,width=70, height=20)
 
         #Sección para calcular el consumo del periodo actual y el promedio de consumo por día. Se puede ver de agregar tambien un estimativo en base a las estadísticas.
-        # self.boton_agregar_lectura=tk.Button(
-        #     self,
-        #     text="Mostrar",
-        #     command=self.mostrar
-        # )
-        # self.boton_agregar_lectura.place(x=550,y=70,width=70, height=20)
+
         conn=sqlite3.connect(f'registo_luz.db')
         cursor=conn.cursor()
         cursor.execute(F"SELECT fecha FROM consumoLuz")
@@ -67,12 +65,50 @@ class VentanaPrincipal(tk.Tk):
         for fecha in todas_las_fechas:
             fechas.append(fecha[0])
 
-        fecha_inicio=fechas[0]
-        fecha_fin=(datetime.strptime(fecha_inicio, '%Y-%m-%d')+ timedelta(61)).strftime('%Y-%m-%d')
-        x=0
-        promedios=[]
-        while fecha_fin in fechas:
 
+        fecha_inicio=fechas[0]
+        # La fecha esta en formato str, realizo un slicing y obtengo los días que inician las lecturas, las cuales coiciden con el corte bimestral de los consumos.
+        dia_fecha=fecha_inicio[8:]
+        mes_fecha_int=int(fecha_inicio[5:7])
+        año_fecha_int=int(fecha_inicio[:4])
+
+        if mes_fecha_int<12:
+            mes_fecha_int+=2
+            mes_fecha_str=str(mes_fecha_int)
+            if mes_fecha_int<10:
+                mes_fecha_str="0"+str(mes_fecha_int)
+        else:
+            mes_fecha_str="02"
+            año_fecha_int+=1
+
+            
+        fecha_fin=f"{año_fecha_int}-{mes_fecha_str}-{dia_fecha}"     
+        # fecha_fin=(datetime.strptime(fecha_inicio, '%Y-%m-%d')+ timedelta(61)).strftime('%Y-%m-%d')
+        # x=0
+        promedios={}
+
+        consumos_mensuales_2=[]
+        consumos_año_periodo={}
+        if mes_fecha_str!="02":
+            cantidad=int(mes_fecha_int/2)-1
+            for i in range(cantidad):
+                consumos_mensuales_2.append(0)
+
+        ######## Calculo los bimestres que se cerraron#########
+        while fecha_fin in fechas:
+            if mes_fecha_str=="02":
+                periodo=1
+            elif mes_fecha_str=="04":
+                periodo=2
+            elif mes_fecha_str=="06":
+                periodo=3
+            elif mes_fecha_str=="08":
+                periodo=4
+            elif mes_fecha_str=="10":
+                periodo=5
+            else:
+                periodo=6
+            
 
             conn=sqlite3.connect(f'registo_luz.db')
             cursor=conn.cursor()
@@ -80,29 +116,58 @@ class VentanaPrincipal(tk.Tk):
             lecturas=cursor.fetchall()
             conn.close()
             consumos=[]
-            # print("############")
-            # print(fecha_inicio)
-            # print(fecha_fin)
+
             for i in range(len(lecturas)):
                 
                 if i<len(lecturas)-1:
                     consumo=round(lecturas[i+1][1]-lecturas[i][1],1)
                     consumos.append(consumo)
+
+            dias=(datetime.strptime(fecha_fin, '%Y-%m-%d')-datetime.strptime(fecha_inicio, '%Y-%m-%d')).days 
+            promedio=round(sum(consumos)/dias,1)
             
-            # print(consumos)
-                
-            promedio=round(sum(consumos)/61,1)
             if promedio!=0:          
-                promedios.append(promedio)
+                promedios[f'{año_fecha_int}-{periodo}']=promedio
+                consumo_bimestral=round(sum(consumos))
+                consumos_mensuales_2.append(consumo_bimestral)
             
             fecha_inicio=fecha_fin
-            fecha_fin=(datetime.strptime(fecha_fin, '%Y-%m-%d')+ timedelta(61)).strftime('%Y-%m-%d')
-        
-        # print(promedios)
+            dia_fecha=fecha_inicio[8:]
+            mes_fecha_int=int(fecha_inicio[5:7])
+            año_fecha_int=int(fecha_inicio[:4])
 
-        print(fecha_inicio)
+            if periodo==6:
+               consumos_año_periodo[f'año_{año_fecha_int}']=consumos_mensuales_2
+               consumos_mensuales_2=[]
+
+            if mes_fecha_int<12:
+                mes_fecha_int+=2
+                mes_fecha_str=str(mes_fecha_int)
+                if mes_fecha_int<10:
+                    mes_fecha_str="0"+str(mes_fecha_int)
+            else:
+                mes_fecha_str="02"
+                año_fecha_int+=1
+                
+
+            fecha_fin=f"{año_fecha_int}-{mes_fecha_str}-{dia_fecha}"
+
+        ########### Fin del cálculo de los bimestres cerrados.
+
+        ########### Calculo el bimestre actual.############
+        if mes_fecha_str=="01" or mes_fecha_str=="02":
+            periodo=1
+        elif mes_fecha_str=="03" or mes_fecha_str=="04":
+            periodo=2
+        elif mes_fecha_str=="05" or mes_fecha_str=="06":
+            periodo=3
+        elif mes_fecha_str=="07" or mes_fecha_str=="08":
+            periodo=4
+        elif mes_fecha_str=="09" or mes_fecha_str=="10":
+            periodo=5
+        else:
+            periodo=6        
         fecha_fin=fechas[-1]
-        print(fecha_fin)
         dias=(datetime.strptime(fecha_fin, '%Y-%m-%d')-datetime.strptime(fecha_inicio, '%Y-%m-%d')).days
 
         conn=sqlite3.connect(f'registo_luz.db')
@@ -113,23 +178,68 @@ class VentanaPrincipal(tk.Tk):
         consumo_actual=[]
 
         for i in range(len(lecturas)):
-            
             if i<len(lecturas)-1:
                 consumo=round(lecturas[i+1][1]-lecturas[i][1],1)
                 consumo_actual.append(consumo)
-        
-        print(consumo_actual)
             
         promedio_actual=round(sum(consumo_actual)/(dias+1),1)
-
-        if promedio!=0:          
-            promedios.append(promedio_actual)        
-
-        print(promedio_actual)
+        consumos_mensuales_2.append(round(sum(consumo_actual),1))
         
-        #Sección para calcular lo consumido por periodo mensual.
 
-        #Sección para realizar el gráfico de barra del consumo mensual o bimestral.
+        if promedio!=0:     
+            promedios[f'{año_fecha_int}-{periodo}']=promedio_actual  
+            consumo_bimestral=round(sum(consumos)) 
+        
+        if periodo!=6:
+            print(periodo)
+            cantidad=6-periodo
+            print(cantidad)
+            for i in range(cantidad):
+                consumos_mensuales_2.append(0)
+        
+        consumos_año_periodo[f'año_{año_fecha_int}']=consumos_mensuales_2
+
+        ############### Fin del calculo del bimestre actual.
+
+        self.etiqueta_consumo_actual=ttk.Label(
+            self,
+            text=f"El consumo actual es de {sum(consumo_actual)} kWh"
+        )
+        self.etiqueta_consumo_actual.place(x=20, y=120)
+
+        self.etiqueta_promedio_actual=ttk.Label(
+            self,
+            text=f"El promedio actual diario es de {promedio_actual} kWh"
+        )
+        self.etiqueta_promedio_actual.place(x=20, y=150)
+        print(consumos_año_periodo)
+       #Sección para realizar el gráfico de barra del consumo mensual o bimestral. 
+    
+        clave=list(consumos_año_periodo.keys())
+
+        data = pd.DataFrame(consumos_año_periodo,
+                    index=('1', '2', '3', '4', '5', '6'))
+
+        n = len(data.index)
+        x = np.arange(n)+1
+        width = 0.2
+        f=Figure(figsize=(10,5), dpi=100)
+        a=f.add_subplot()
+        a.bar(x - width*(1+1/2), data.año_2020, width=width, label=clave[0][4:])
+        a.bar(x - width/2, data.año_2021, width=width, label=clave[1][4:])
+        a.bar(x + width/2, data.año_2022, width=width, label=clave[2][4:])
+        a.bar(x + width*(1+1/2), data.año_2023, width=width, label=clave[3][4:])
+        a.legend(loc='best')
+        a.set_xlabel('Período')
+        a.set_ylabel('Consumo en kWh')
+        
+        canvas=FigureCanvasTkAgg(f,self)
+        canvas.draw()
+        canvas.get_tk_widget().place(x=20,y=200)   
+
+        ############### FIN SECCION GRAFICO ################
+
+ 
 
 
     def validar_numeros(self, texto):
