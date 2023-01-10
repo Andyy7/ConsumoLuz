@@ -1,10 +1,10 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 import sqlite3
 import tkinter as tk
 from tkinter import ttk, messagebox
 import os
 import os.path
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 import numpy as np
@@ -55,12 +55,8 @@ class VentanaPrincipal(tk.Tk):
         self.boton_agregar_lectura.place(x=550,y=45,width=70, height=20)
 
         #Sección para calcular el consumo del periodo actual y el promedio de consumo por día. Se puede ver de agregar tambien un estimativo en base a las estadísticas.
-
-        conn=sqlite3.connect(f'registo_luz.db')
-        cursor=conn.cursor()
-        cursor.execute(F"SELECT fecha FROM consumoLuz")
-        todas_las_fechas=cursor.fetchall()
-        conn.close()
+        consulta="fecha FROM consumoLuz"
+        todas_las_fechas=self.consulta_bd(consulta)
         fechas=[]
         for fecha in todas_las_fechas:
             fechas.append(fecha[0])
@@ -71,12 +67,12 @@ class VentanaPrincipal(tk.Tk):
         mes_fecha_str=fecha_fin[5:7]
         promedios={}
 
-        consumos_mensuales_2=[]
+        consumos_bimestrales=[]
         consumos_año_periodo={}
         if mes_fecha_str!="02":
             cantidad=int(int(mes_fecha_str)/2)-1
             for i in range(cantidad):
-                consumos_mensuales_2.append(0)
+                consumos_bimestrales.append(0)
 
         ######## Calculo los bimestres que se cerraron#########
         while fecha_fin in fechas:
@@ -93,12 +89,8 @@ class VentanaPrincipal(tk.Tk):
             else:
                 periodo=6
             
-
-            conn=sqlite3.connect(f'registo_luz.db')
-            cursor=conn.cursor()
-            cursor.execute(F"SELECT fecha, lectura FROM consumoLuz WHERE fecha BETWEEN '{fecha_inicio}' AND '{fecha_fin}'")
-            lecturas=cursor.fetchall()
-            conn.close()
+            consulta=f"fecha, lectura FROM consumoLuz WHERE fecha BETWEEN '{fecha_inicio}' AND '{fecha_fin}'"
+            lecturas=self.consulta_bd(consulta)
             consumos=[]
 
             for i in range(len(lecturas)):
@@ -113,11 +105,11 @@ class VentanaPrincipal(tk.Tk):
             if promedio!=0:          
                 promedios[f'{año_fecha_int}-{periodo}']=promedio
                 consumo_bimestral=round(sum(consumos))
-                consumos_mensuales_2.append(consumo_bimestral)
+                consumos_bimestrales.append(consumo_bimestral)
             
             if periodo==6:
-               consumos_año_periodo[f'año_{año_fecha_int}']=consumos_mensuales_2
-               consumos_mensuales_2=[]
+               consumos_año_periodo[f'año_{año_fecha_int}']=consumos_bimestrales
+               consumos_bimestrales=[]
 
             fecha_inicio=fecha_fin          
             fecha_fin=self.calcular_fecha_fin(fecha_inicio)
@@ -142,11 +134,9 @@ class VentanaPrincipal(tk.Tk):
         fecha_fin=fechas[-1]
         dias=(datetime.strptime(fecha_fin, '%Y-%m-%d')-datetime.strptime(fecha_inicio, '%Y-%m-%d')).days
 
-        conn=sqlite3.connect(f'registo_luz.db')
-        cursor=conn.cursor()
-        cursor.execute(F"SELECT fecha, lectura FROM consumoLuz WHERE fecha BETWEEN '{fecha_inicio}' AND '{fecha_fin}'")
-        lecturas=cursor.fetchall()
-        conn.close()
+        consulta=f"fecha, lectura FROM consumoLuz WHERE fecha BETWEEN '{fecha_inicio}' AND '{fecha_fin}'"
+        lecturas=self.consulta_bd(consulta)
+
         consumo_actual=[]
 
         for i in range(len(lecturas)):
@@ -155,7 +145,7 @@ class VentanaPrincipal(tk.Tk):
                 consumo_actual.append(consumo)
             
         promedio_actual=round(sum(consumo_actual)/(dias+1),1)
-        consumos_mensuales_2.append(round(sum(consumo_actual),1))
+        consumos_bimestrales.append(round(sum(consumo_actual),1))
         
 
         if promedio!=0:     
@@ -167,9 +157,9 @@ class VentanaPrincipal(tk.Tk):
             cantidad=6-periodo
             print(cantidad)
             for i in range(cantidad):
-                consumos_mensuales_2.append(0)
+                consumos_bimestrales.append(0)
         
-        consumos_año_periodo[f'año_{año_fecha_int}']=consumos_mensuales_2
+        consumos_año_periodo[f'año_{año_fecha_int}']=consumos_bimestrales
 
         ############### Fin del calculo del bimestre actual.
 
@@ -211,6 +201,13 @@ class VentanaPrincipal(tk.Tk):
 
         ############### FIN SECCION GRAFICO ################
 
+    def consulta_bd(self,consulta):
+        conn=sqlite3.connect(f'registo_luz.db')
+        cursor=conn.cursor()
+        cursor.execute(F"SELECT {consulta}")
+        salida=cursor.fetchall()
+        conn.close()
+        return salida
  
     def calcular_fecha_fin(self,dato):
         # La fecha esta en formato str, realizo un slicing y obtengo los días que inician las lecturas, las cuales coiciden con el corte bimestral de los consumos.
