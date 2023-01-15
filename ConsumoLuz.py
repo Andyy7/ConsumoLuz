@@ -129,7 +129,7 @@ class VentanaPrincipal(tk.Tk):
             for i in range(cantidad):
                 consumos_bimestrales.append(0)
 
-        ######## Calculo los bimestres que se cerraron#########
+        ######## Inicio de la sección para calcular el consumo de los bimestres  cerrados o finalizados #########
         while fecha_fin in fechas:
             if mes_fecha_str=="02":
                 periodo=1
@@ -170,7 +170,9 @@ class VentanaPrincipal(tk.Tk):
             fecha_fin=self.calcular_fecha_fin(fecha_inicio)
             año_fecha_int=int(fecha_fin[:4])     
             mes_fecha_str=fecha_fin[5:7]
+        ######## Fin de la sección para calcular el consumo de los bimestres  cerrados o finalizados#########
 
+        ######## Inicio de la sección para calcular el consumo del bimestre actual #########
         if mes_fecha_str=="01" or mes_fecha_str=="02":
             periodo=1
         elif mes_fecha_str=="03" or mes_fecha_str=="04":
@@ -197,31 +199,20 @@ class VentanaPrincipal(tk.Tk):
                 consumo_actual.append(consumo)
             
         promedio_actual=round(sum(consumo_actual)/(dias+1),1)
-        consumos_bimestrales.append(round(sum(consumo_actual),1))
+        consumos_bimestrales.append(round(sum(consumo_actual)))
 
         if promedio!=0:     
-            promedios[f'{año_fecha_int}-{periodo}']=promedio_actual  
-            consumo_bimestral=round(sum(consumos)) 
+            promedios[f'{año_fecha_int}-{periodo}']=promedio_actual 
+            consumo_bimestral_actual=round(sum(consumo_actual)) 
         
         if periodo!=6:
             cantidad=6-periodo
             for i in range(cantidad):
                 consumos_bimestrales.append(0)
-        print("#1")
-        print(consumo_actual)
-        print(consumos_año_periodo)
+
         consumos_año_periodo[f'año_{año_fecha_int}']=consumos_bimestrales
-        ultimo_año=list(consumos_año_periodo.keys())[-1]
-        consumos_ultimo_año=consumos_año_periodo[ultimo_año]
-        for i in range(len(consumos_ultimo_año)):
-            if consumos_ultimo_año[5-i]!=0:
-                consumo_actual=consumos_ultimo_año[5-i]
-        print("#2")
-        print(consumos_año_periodo)
-        print(consumo_actual)
-        datos=[consumo_actual,promedio_actual]
-        
         self.graficar(consumos_año_periodo)
+        datos=[consumo_bimestral_actual,promedio_actual]
         return datos
 
     def consultar_bd(self,consulta):
