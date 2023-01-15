@@ -9,11 +9,18 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 import numpy as np
 import pandas as pd
+from base64 import b64decode
+
+icono_chico_datos="iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADr0AAA69AUf7kK0AAAI6SURBVDhPfZJNaBNBFMffbJakbrJJGk3jNmHX3cav4NfBYz2kFhs8tFfx4MGDhV4riCdPHkTw7MWDiKLgoVAqIlbBY6QIoi1KSEyItTWNSWzTxG12pjvTSdm1oT+Ynfm/L968WdgPPaBfMALGMJc9EfjOUENqvy5p17kETLBoEUvkEgy/elGX9WNcMlwFSo1Szd5iqqQqVLeb7azZNLP0rIAiEUCZwnrhO9VdEP0kA8lobiNXYRYAD/3ofj3t85I0PZsmfpdvlt4nIOErQ7lFbYPy4MHl9eUqK2C3NkIImiAYPSBtspo6S57fnOpMnEhimH3jAZ8P4MWMZyb32XsF9+EYEaxpQMJsoVl4ywpwPElIioeOmHdfPjKn44cJM9b/IprMijx8LN7/WbTu2F1s2a4O9TtnYMUhbo2PWTe6yZRwkMDktQ78riAYS1uTzmSKa4j5A/kBLQEyly7On8MgIAjaA45yE8NVQG7Ja79WgQ3pf0aGLQj4YTO6GV3jJoarwCIsmq/mhSf1hnM0O1DbnO1bgAV6hV3Ykznx4IEPS99IZvySpSBeB2OAqdveT0s56Wq1VTV3rPugSVom+1Qh5GuMrY/PFGJI2mXudrG3Vxujz1BH01tfjg5h5s/lBfJ6XjhT/Ff8wQIc7LkCJSJGgr5I6lStfby8UtdKlXqoUF35M1fr1Bo8ZJeeHWghLSx0hHsIEYNq+y/NYxHfKjaKdRbgwPUKXWhgMBwMnTydGqUrFJb7eyUDAGwDiJrU0NO+Hg8AAAAASUVORK5CYII="
+icono_grande_datos="iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADr0AAA69AUf7kK0AAASoSURBVFhHpZdtbBRFGMefmbtr73avb1EEyt3tvdHW0xRNAU2t1ITwoYkSTGMiRCPV+lZFCQYMiR/84AejEROiUUNiPxgsfABfwIYrsVaFxpcaBA562vaud1ypoFBqb+/au90dZ3tDw8nd3m75JZOd5z8zO88+8+zsLNwKHl54zcsL25m5KDC7LpZqQgurLwpNBwROuNfNu19lpmE8vKeRlg3MLIimAxZsSQAhu32cq4lJ/4cQgmgQbkYAwUpbDyCkVDCpIJoOjCZH/wZAuxSE97VCq5nJC2BQDhJMDjIzD8zDm9S/UCQZO8ykxUOTLejm3E8xsySCXWjw8O6Lfrt/CZNujcCSgH05LOeYeR2Tw+ZY4bQ5a9V6TsrhAIfNV+nzM1MTxK5QZ6+7fY7M3R0TYwNMKgT22D3tRFGeRQg9WFlBrKr47wxK03D/CHSposnoISoVzAsVX4WrOYthOD4dn1LtBQfUsCEFHaXVGCb49Ug6MpRryeG3+R0SyvYE6khL5xMSPNSsQE1Vbp6pawgGBjHs22+G8J/oBzORt4ykExPzjQz6Rt2DEbxNqw0KgrZYMjas6gtJSIUwl+IC9Mm+UJB8lK75G6wJvFavS8bZwe3PyS1ffzYHj7bJ85Mf+NIMd7bY4MmXy2DyEoKejzKwrVNeJ2HTSZ/V52TDwcMJu+mT9tFq0CRa6q9PrrIQgRupv62+QhKl6rHZsQvUNLl5YXBnl7S2a6uU63ADKRr8c39g+PywGX79HcPH72Rg4CSGPZ9YfoqK4y20i+wsd/osnOWfyFRkOjfKAB7O9cxjzS6ihJYSck679O6tJWucAon1LSPt97sIDftWdpuilNyKCcIvvNQhASoYq3za1svQ8bgEb+2xQFduzIusqSiaDriqXDWcjTQ9sFZmSmme3izB0BkMfo8CtnJY7a3xVrGmgmhvxVnwCg6CzDftgcUpLwdYs0qBUBiDawXB8pzsYU0F0XRAISZsztti9HFXgwKq0/MFiOYdNB2QkZyYmET0m8IEnbzSKcGGdTJM/EXHIrP6JhVF04F4Kj559RqMqOE0ytlhDNPTKBwRI5eZVJCSd6bJ3/1pj4EkYKhjaOC6mVmUkg6U2awffHUMx/tP6E8Gte+RoGk8nUp/yKSilLzrlfSVTJWp+udvT5g239ekWGqXaifE0GkMz+8sS2Yz+OGElBhnclF0bC851KPVsjuUY/2HZrGVvmqFmJ0DWN9uJRcvobbx1HiQyZrozq6oGD0+eRn19g0UD9rx701A+wT1Tq5iKL0RoOAvp4oPUT9GChDdk6sYcgCIHI1dwHB1ChUssQQGeqaIsN660J0DKvSMsIp+YHpptZjjCibKxrFU/Ddml8SQAwEIlImcuIUeWiqZlAc9o8/wKX7/eTifYVJJjEWAd29b2bByb+PqRqbkc2boNIyGR3ZExdj7TCqJMQfs7lb6G/INjQDPpDxoBESahI/Qg+13TCqJIQdU1CO3xW7qIArK++NBmMxkk3J3AhL0kKYfww7Qn5QddYH69xqb8pchdCoEw2fDu+ge8C6TdGHYAXUZ6EHhCF2GvAioCYgR2RQR4/1M0gHAf/9Vtp77nCX7AAAAAElFTkSuQmCC"
 class VentanaPrincipal(tk.Tk):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.config(width=1040,height=720)
         self.title("Registro Consumo Luz")
+        icono_chico=tk.PhotoImage(data=b64decode(icono_chico_datos))
+        icono_grande=tk.PhotoImage(data=b64decode(icono_grande_datos))
+        self.iconphoto(True,icono_grande,icono_chico)
         
         #Verifica que exista la base de datos, de lo contrario llama a la funcion que se ocupa de crearla.
         if os.path.isfile("registo_luz.db")==False:
@@ -46,7 +53,7 @@ class VentanaPrincipal(tk.Tk):
             validatecommand=(self.register(self.validar_fecha),"%P")
         )
         self.caja_fecha.place(x=355,y=45,width=142 ,height=20)    
-
+        
         self.boton_agregar_lectura=tk.Button(
             self,
             text="Agregar",
@@ -54,9 +61,57 @@ class VentanaPrincipal(tk.Tk):
         )
         self.boton_agregar_lectura.place(x=550,y=45,width=70, height=20)
 
-        #Sección para calcular el consumo del periodo actual y el promedio de consumo por día. Se puede ver de agregar tambien un estimativo en base a las estadísticas.
+        consumo_actual=self.calcular_bimestres()[0]
+        promedio_actual=self.calcular_bimestres()[1]
+
+        registros=self.consultar_bd(f"fecha, lectura FROM consumoLuz")
+        ultima_lectura=registros[-1][1]
+        ultima_fecha=registros[-1][0]
+        
+        self.etiqueta_ultima_lectura=ttk.Label(
+            self,
+            text=f"La última lectura registrada es {ultima_lectura} con fecha del {ultima_fecha}."
+        )
+        self.etiqueta_ultima_lectura.place(x=20, y=90)
+
+        self.etiqueta_consumo_actual=ttk.Label(
+            self,
+            text=f"El consumo actual es de {consumo_actual} kWh."
+        )
+        self.etiqueta_consumo_actual.place(x=20, y=120)
+
+        self.etiqueta_promedio_actual=ttk.Label(
+            self,
+            text=f"El promedio actual es de {promedio_actual} kWh."
+        )
+        self.etiqueta_promedio_actual.place(x=20, y=150)
+
+    def graficar(self,consumos_año_periodo):
+        clave=list(consumos_año_periodo.keys())
+
+        data = pd.DataFrame(consumos_año_periodo,
+                    index=('1', '2', '3', '4', '5', '6'))
+
+        n = len(data.index)
+        x = np.arange(n)+1
+        width = 0.2
+        f=Figure(figsize=(10,5), dpi=100)
+        a=f.add_subplot()
+        a.bar(x - width*(1+1/2), data.año_2020, width=width, label=clave[0][4:])
+        a.bar(x - width/2, data.año_2021, width=width, label=clave[1][4:])
+        a.bar(x + width/2, data.año_2022, width=width, label=clave[2][4:])
+        a.bar(x + width*(1+1/2), data.año_2023, width=width, label=clave[3][4:])
+        a.legend(loc='best')
+        a.set_xlabel('Período')
+        a.set_ylabel('Consumo en kWh')
+        
+        canvas=FigureCanvasTkAgg(f,self)
+        canvas.draw()
+        canvas.get_tk_widget().place(x=20,y=200)   
+
+    def calcular_bimestres(self):
         consulta="fecha FROM consumoLuz"
-        todas_las_fechas=self.consulta_bd(consulta)
+        todas_las_fechas=self.consultar_bd(consulta)
         fechas=[]
         for fecha in todas_las_fechas:
             fechas.append(fecha[0])
@@ -90,7 +145,7 @@ class VentanaPrincipal(tk.Tk):
                 periodo=6
             
             consulta=f"fecha, lectura FROM consumoLuz WHERE fecha BETWEEN '{fecha_inicio}' AND '{fecha_fin}'"
-            lecturas=self.consulta_bd(consulta)
+            lecturas=self.consultar_bd(consulta)
             consumos=[]
 
             for i in range(len(lecturas)):
@@ -116,9 +171,6 @@ class VentanaPrincipal(tk.Tk):
             año_fecha_int=int(fecha_fin[:4])     
             mes_fecha_str=fecha_fin[5:7]
 
-        ########### Fin del cálculo de los bimestres cerrados.
-
-        ########### Calculo el bimestre actual.############
         if mes_fecha_str=="01" or mes_fecha_str=="02":
             periodo=1
         elif mes_fecha_str=="03" or mes_fecha_str=="04":
@@ -135,7 +187,7 @@ class VentanaPrincipal(tk.Tk):
         dias=(datetime.strptime(fecha_fin, '%Y-%m-%d')-datetime.strptime(fecha_inicio, '%Y-%m-%d')).days
 
         consulta=f"fecha, lectura FROM consumoLuz WHERE fecha BETWEEN '{fecha_inicio}' AND '{fecha_fin}'"
-        lecturas=self.consulta_bd(consulta)
+        lecturas=self.consultar_bd(consulta)
 
         consumo_actual=[]
 
@@ -146,62 +198,33 @@ class VentanaPrincipal(tk.Tk):
             
         promedio_actual=round(sum(consumo_actual)/(dias+1),1)
         consumos_bimestrales.append(round(sum(consumo_actual),1))
-        
 
         if promedio!=0:     
             promedios[f'{año_fecha_int}-{periodo}']=promedio_actual  
             consumo_bimestral=round(sum(consumos)) 
         
         if periodo!=6:
-            print(periodo)
             cantidad=6-periodo
-            print(cantidad)
             for i in range(cantidad):
                 consumos_bimestrales.append(0)
-        
-        consumos_año_periodo[f'año_{año_fecha_int}']=consumos_bimestrales
-
-        ############### Fin del calculo del bimestre actual.
-
-        self.etiqueta_consumo_actual=ttk.Label(
-            self,
-            text=f"El consumo actual es de {sum(consumo_actual)} kWh"
-        )
-        self.etiqueta_consumo_actual.place(x=20, y=120)
-
-        self.etiqueta_promedio_actual=ttk.Label(
-            self,
-            text=f"El promedio actual diario es de {promedio_actual} kWh"
-        )
-        self.etiqueta_promedio_actual.place(x=20, y=150)
+        print("#1")
+        print(consumo_actual)
         print(consumos_año_periodo)
-       #Sección para realizar el gráfico de barra del consumo bimestral. 
-    
-        clave=list(consumos_año_periodo.keys())
-
-        data = pd.DataFrame(consumos_año_periodo,
-                    index=('1', '2', '3', '4', '5', '6'))
-
-        n = len(data.index)
-        x = np.arange(n)+1
-        width = 0.2
-        f=Figure(figsize=(10,5), dpi=100)
-        a=f.add_subplot()
-        a.bar(x - width*(1+1/2), data.año_2020, width=width, label=clave[0][4:])
-        a.bar(x - width/2, data.año_2021, width=width, label=clave[1][4:])
-        a.bar(x + width/2, data.año_2022, width=width, label=clave[2][4:])
-        a.bar(x + width*(1+1/2), data.año_2023, width=width, label=clave[3][4:])
-        a.legend(loc='best')
-        a.set_xlabel('Período')
-        a.set_ylabel('Consumo en kWh')
+        consumos_año_periodo[f'año_{año_fecha_int}']=consumos_bimestrales
+        ultimo_año=list(consumos_año_periodo.keys())[-1]
+        consumos_ultimo_año=consumos_año_periodo[ultimo_año]
+        for i in range(len(consumos_ultimo_año)):
+            if consumos_ultimo_año[5-i]!=0:
+                consumo_actual=consumos_ultimo_año[5-i]
+        print("#2")
+        print(consumos_año_periodo)
+        print(consumo_actual)
+        datos=[consumo_actual,promedio_actual]
         
-        canvas=FigureCanvasTkAgg(f,self)
-        canvas.draw()
-        canvas.get_tk_widget().place(x=20,y=200)   
+        self.graficar(consumos_año_periodo)
+        return datos
 
-        ############### FIN SECCION GRAFICO ################
-
-    def consulta_bd(self,consulta):
+    def consultar_bd(self,consulta):
         conn=sqlite3.connect(f'registo_luz.db')
         cursor=conn.cursor()
         cursor.execute(F"SELECT {consulta}")
@@ -270,7 +293,7 @@ class VentanaPrincipal(tk.Tk):
         else:
             return fecha_verificar
 
-    def agregar_lectura(self):
+    def agregar_lectura(self,*args):
         lectura=self.verificar_vacio(self.caja_lectura.get())
         if lectura!=False:
             fecha=self.verificar_fecha(self.caja_fecha.get())
@@ -282,7 +305,20 @@ class VentanaPrincipal(tk.Tk):
                 conn.close() 
 
                 self.caja_fecha.delete(0,tk.END)
-                self.caja_lectura.delete(0,tk.END)               
+                self.caja_lectura.delete(0,tk.END)     
+
+        consumo_actual=self.calcular_bimestres()[0]
+        promedio_actual=self.calcular_bimestres()[1]
+        
+        self.etiqueta_ultima_lectura.config(
+            text=f"La última lectura registrada es {lectura} con fecha del {fecha}."
+        )
+        self.etiqueta_consumo_actual.config(
+            text=f"El consumo actual es de {consumo_actual} kWh."
+        )
+        self.etiqueta_promedio_actual.config(
+            text=f"El promedio actual es de {promedio_actual} kWh."
+        )
 
     def crear_base_datos(self):
         conn=sqlite3.connect(f'registo_luz.db')
