@@ -4,11 +4,9 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import os
 import os.path
-# import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 import numpy as np
-import pandas as pd
 from base64 import b64decode
 
 icono_chico_datos="iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADr0AAA69AUf7kK0AAAI6SURBVDhPfZJNaBNBFMffbJakbrJJGk3jNmHX3cav4NfBYz2kFhs8tFfx4MGDhV4riCdPHkTw7MWDiKLgoVAqIlbBY6QIoi1KSEyItTWNSWzTxG12pjvTSdm1oT+Ynfm/L968WdgPPaBfMALGMJc9EfjOUENqvy5p17kETLBoEUvkEgy/elGX9WNcMlwFSo1Szd5iqqQqVLeb7azZNLP0rIAiEUCZwnrhO9VdEP0kA8lobiNXYRYAD/3ofj3t85I0PZsmfpdvlt4nIOErQ7lFbYPy4MHl9eUqK2C3NkIImiAYPSBtspo6S57fnOpMnEhimH3jAZ8P4MWMZyb32XsF9+EYEaxpQMJsoVl4ywpwPElIioeOmHdfPjKn44cJM9b/IprMijx8LN7/WbTu2F1s2a4O9TtnYMUhbo2PWTe6yZRwkMDktQ78riAYS1uTzmSKa4j5A/kBLQEyly7On8MgIAjaA45yE8NVQG7Ja79WgQ3pf0aGLQj4YTO6GV3jJoarwCIsmq/mhSf1hnM0O1DbnO1bgAV6hV3Ykznx4IEPS99IZvySpSBeB2OAqdveT0s56Wq1VTV3rPugSVom+1Qh5GuMrY/PFGJI2mXudrG3Vxujz1BH01tfjg5h5s/lBfJ6XjhT/Ff8wQIc7LkCJSJGgr5I6lStfby8UtdKlXqoUF35M1fr1Bo8ZJeeHWghLSx0hHsIEYNq+y/NYxHfKjaKdRbgwPUKXWhgMBwMnTydGqUrFJb7eyUDAGwDiJrU0NO+Hg8AAAAASUVORK5CYII="
@@ -87,20 +85,17 @@ class VentanaPrincipal(tk.Tk):
         self.etiqueta_promedio_actual.place(x=20, y=150)
 
     def graficar(self,consumos_año_periodo):
-        clave=list(consumos_año_periodo.keys())
+        claves=list(consumos_año_periodo.keys())
 
-        data = pd.DataFrame(consumos_año_periodo,
-                    index=('1', '2', '3', '4', '5', '6'))
-
-        n = len(data.index)
+        n = 6       # Cantidad de bimestres
         x = np.arange(n)+1
         width = 0.2
         f=Figure(figsize=(10,5), dpi=100)
         a=f.add_subplot()
-        a.bar(x - width*(1+1/2), data.año_2020, width=width, label=clave[0][4:])
-        a.bar(x - width/2, data.año_2021, width=width, label=clave[1][4:])
-        a.bar(x + width/2, data.año_2022, width=width, label=clave[2][4:])
-        a.bar(x + width*(1+1/2), data.año_2023, width=width, label=clave[3][4:])
+        a.bar(x - width*(1+1/2), consumos_año_periodo[claves[-4]], width=width, label=claves[-4])
+        a.bar(x - width/2, consumos_año_periodo[claves[-3]], width=width, label=claves[-3])
+        a.bar(x + width/2, consumos_año_periodo[claves[-2]], width=width, label=claves[-2])
+        a.bar(x + width*(1+1/2), consumos_año_periodo[claves[-1]], width=width, label=claves[-1])
         a.legend(loc='best')
         a.set_xlabel('Período')
         a.set_ylabel('Consumo en kWh')
@@ -163,7 +158,7 @@ class VentanaPrincipal(tk.Tk):
                 consumos_bimestrales.append(consumo_bimestral)
             
             if periodo==6:
-               consumos_año_periodo[f'año_{año_fecha_int}']=consumos_bimestrales
+               consumos_año_periodo[f'{año_fecha_int}']=consumos_bimestrales
                consumos_bimestrales=[]
 
             fecha_inicio=fecha_fin          
@@ -210,7 +205,7 @@ class VentanaPrincipal(tk.Tk):
             for i in range(cantidad):
                 consumos_bimestrales.append(0)
 
-        consumos_año_periodo[f'año_{año_fecha_int}']=consumos_bimestrales
+        consumos_año_periodo[f'{año_fecha_int}']=consumos_bimestrales
         self.graficar(consumos_año_periodo)
         datos=[consumo_bimestral_actual,promedio_actual]
         return datos
@@ -240,6 +235,36 @@ class VentanaPrincipal(tk.Tk):
         
         return f"{año_fecha_int}-{mes_fecha_str}-{dia_fecha}"
 
+    def validar_sucesion_lectura(self,dato):
+        # Se realiza una prueba para saber si la lectura cumple con la sucesión de lecturas anteriores.
+        registros=self.consultar_bd(f"fecha, lectura FROM consumoLuz")
+        ultima_lectura=float(registros[-1][1])
+
+        if ultima_lectura>=float(dato):
+            messagebox.showwarning(
+                title="Advertencia",
+                message="Ingreso de lectura no válido. Se esta ingresando un valor inferior a la última lectura registrada."
+            )
+            return False
+        else:
+            return dato
+
+    def validar_sucesion_fecha(self,dato):
+        # Se realiza una prueba para saber si la fecha cumple con la sucesión de fechas anteriores.
+        registros=self.consultar_bd(f"fecha, lectura FROM consumoLuz")
+        ultima_fecha=datetime.strptime(registros[-1][0], '%Y-%m-%d')
+        dato=datetime.strptime(dato, '%Y-%m-%d')
+
+        if ultima_fecha>=dato:
+            messagebox.showwarning(
+                title="Advertencia",
+                message="Ingreso de fecha no válido. Se esta ingresando una fecha inferior a la última registrada."
+            )
+            return False
+        else:
+            dato=dato.date()
+            return dato
+        
     def validar_numeros(self, texto):
         if texto=="":
             return True
@@ -248,7 +273,7 @@ class VentanaPrincipal(tk.Tk):
                 float(texto)
             except ValueError:
                 return False
-            return True
+            return True     
 
     def validar_fecha(self, fecha):
         if len(fecha)>10:
@@ -269,6 +294,7 @@ class VentanaPrincipal(tk.Tk):
                 message="Por favor es necesario ingresar un valor."
             )
             return False
+        
         else:
             return dato_verificar
 
@@ -287,29 +313,33 @@ class VentanaPrincipal(tk.Tk):
     def agregar_lectura(self,*args):
         lectura=self.verificar_vacio(self.caja_lectura.get())
         if lectura!=False:
-            fecha=self.verificar_fecha(self.caja_fecha.get())
-            if fecha!=None:
-                conn=sqlite3.connect(f'registo_luz.db')
-                cursor=conn.cursor()
-                cursor.execute("INSERT INTO consumoLuz VALUES (?, ?)", (fecha, lectura))
-                conn.commit()
-                conn.close() 
+            lectura=self.validar_sucesion_lectura(lectura)
+            if lectura!=False:
+                fecha=self.verificar_fecha(self.caja_fecha.get())
+                if fecha!=None:
+                    fecha=self.validar_sucesion_fecha(fecha)
+                    if fecha!=False:
+                        conn=sqlite3.connect(f'registo_luz.db')
+                        cursor=conn.cursor()
+                        cursor.execute("INSERT INTO consumoLuz VALUES (?, ?)", (fecha, lectura))
+                        conn.commit()
+                        conn.close() 
 
-                self.caja_fecha.delete(0,tk.END)
-                self.caja_lectura.delete(0,tk.END)     
+                        self.caja_fecha.delete(0,tk.END)
+                        self.caja_lectura.delete(0,tk.END)     
 
-        consumo_actual=self.calcular_bimestres()[0]
-        promedio_actual=self.calcular_bimestres()[1]
-        
-        self.etiqueta_ultima_lectura.config(
-            text=f"La última lectura registrada es {lectura} con fecha del {fecha}."
-        )
-        self.etiqueta_consumo_actual.config(
-            text=f"El consumo actual es de {consumo_actual} kWh."
-        )
-        self.etiqueta_promedio_actual.config(
-            text=f"El promedio actual es de {promedio_actual} kWh."
-        )
+                        consumo_actual=self.calcular_bimestres()[0]
+                        promedio_actual=self.calcular_bimestres()[1]
+                
+                        self.etiqueta_ultima_lectura.config(
+                            text=f"La última lectura registrada es {lectura} con fecha del {fecha}."
+                        )
+                        self.etiqueta_consumo_actual.config(
+                            text=f"El consumo actual es de {consumo_actual} kWh."
+                        )
+                        self.etiqueta_promedio_actual.config(
+                            text=f"El promedio actual es de {promedio_actual} kWh."
+                        )
 
     def crear_base_datos(self):
         conn=sqlite3.connect(f'registo_luz.db')
