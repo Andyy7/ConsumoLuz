@@ -14,14 +14,14 @@ icono_grande_datos="iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c
 class VentanaPrincipal(tk.Tk):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.config(width=1040,height=720)
+        self.config(width=1040,height=670)
         self.title("Registro Consumo Luz")
         icono_chico=tk.PhotoImage(data=b64decode(icono_chico_datos))
         icono_grande=tk.PhotoImage(data=b64decode(icono_grande_datos))
         self.iconphoto(True,icono_grande,icono_chico)
         
         #Verifica que exista la base de datos, de lo contrario llama a la funcion que se ocupa de crearla.
-        if os.path.isfile("registo_luz.db")==False:
+        if os.path.isfile("Registro_luz.db")==False:
             self.crear_base_datos()
 
         #Sección para agregar lecturas nuevas
@@ -30,34 +30,34 @@ class VentanaPrincipal(tk.Tk):
             self,
             text="Lectura:"
         )
-        self.etiqueta_lectura.place(x=20,y=45)
+        self.etiqueta_lectura.place(x=20,y=20)
 
         self.caja_lectura=ttk.Entry(
             self,
             validate="key",
             validatecommand=(self.register(self.validar_numeros),"%P")
         )
-        self.caja_lectura.place(x=80,y=45,width=142 ,height=20)
+        self.caja_lectura.place(x=80,y=20,width=142 ,height=20)
     
         self.etiqueta_fecha=ttk.Label(
             self,
             text="Fecha (aaaa-mm-dd):"
         )
-        self.etiqueta_fecha.place(x=230,y=45)
+        self.etiqueta_fecha.place(x=230,y=20)
 
         self.caja_fecha=ttk.Entry(
             self,
             validate="key",
             validatecommand=(self.register(self.validar_fecha),"%P")
         )
-        self.caja_fecha.place(x=355,y=45,width=142 ,height=20)    
+        self.caja_fecha.place(x=355,y=20,width=142 ,height=20)    
         
         self.boton_agregar_lectura=tk.Button(
             self,
             text="Agregar",
             command=self.agregar_lectura
         )
-        self.boton_agregar_lectura.place(x=550,y=45,width=70, height=20)
+        self.boton_agregar_lectura.place(x=520,y=20,width=70, height=20)
 
         consumo_actual=self.calcular_bimestres()[0]
         promedio_actual=self.calcular_bimestres()[1]
@@ -70,19 +70,19 @@ class VentanaPrincipal(tk.Tk):
             self,
             text=f"La última lectura registrada es {ultima_lectura} con fecha del {ultima_fecha}."
         )
-        self.etiqueta_ultima_lectura.place(x=20, y=90)
+        self.etiqueta_ultima_lectura.place(x=20, y=55)
 
         self.etiqueta_consumo_actual=ttk.Label(
             self,
             text=f"El consumo actual es de {consumo_actual} kWh."
         )
-        self.etiqueta_consumo_actual.place(x=20, y=120)
+        self.etiqueta_consumo_actual.place(x=20, y=80)
 
         self.etiqueta_promedio_actual=ttk.Label(
             self,
             text=f"El promedio actual es de {promedio_actual} kWh."
         )
-        self.etiqueta_promedio_actual.place(x=20, y=150)
+        self.etiqueta_promedio_actual.place(x=20, y=105)
 
     def graficar(self,consumos_año_periodo):
         claves=list(consumos_año_periodo.keys())
@@ -102,7 +102,7 @@ class VentanaPrincipal(tk.Tk):
         
         canvas=FigureCanvasTkAgg(f,self)
         canvas.draw()
-        canvas.get_tk_widget().place(x=20,y=200)   
+        canvas.get_tk_widget().place(x=20,y=150)   
 
     def calcular_bimestres(self):
         consulta="fecha FROM consumoLuz"
@@ -179,7 +179,8 @@ class VentanaPrincipal(tk.Tk):
         elif mes_fecha_str=="09" or mes_fecha_str=="10":
             periodo=5
         else:
-            periodo=6        
+            periodo=6  
+   
         fecha_fin=fechas[-1]
         dias=(datetime.strptime(fecha_fin, '%Y-%m-%d')-datetime.strptime(fecha_inicio, '%Y-%m-%d')).days
 
@@ -211,7 +212,7 @@ class VentanaPrincipal(tk.Tk):
         return datos
 
     def consultar_bd(self,consulta):
-        conn=sqlite3.connect(f'registo_luz.db')
+        conn=sqlite3.connect(f'Registro_luz.db')
         cursor=conn.cursor()
         cursor.execute(F"SELECT {consulta}")
         salida=cursor.fetchall()
@@ -319,7 +320,7 @@ class VentanaPrincipal(tk.Tk):
                 if fecha!=None:
                     fecha=self.validar_sucesion_fecha(fecha)
                     if fecha!=False:
-                        conn=sqlite3.connect(f'registo_luz.db')
+                        conn=sqlite3.connect(f'Registro_luz.db')
                         cursor=conn.cursor()
                         cursor.execute("INSERT INTO consumoLuz VALUES (?, ?)", (fecha, lectura))
                         conn.commit()
@@ -342,7 +343,7 @@ class VentanaPrincipal(tk.Tk):
                         )
 
     def crear_base_datos(self):
-        conn=sqlite3.connect(f'registo_luz.db')
+        conn=sqlite3.connect(f'Registro_luz.db')
         cursor=conn.cursor()
 
         try:
