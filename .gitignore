@@ -1,10 +1,9 @@
-
+Ejecutable/
 # Archivos de texto
 *.txt
 
 # Archivos de Base de datos
-# *.db
-
+*.db
 
 # Archivos de imagen
 *.png
@@ -12,6 +11,7 @@
 # Archivo que utilicé para poder incorporar el ícono al programa
 codificar_icono.py
 API_IOL_v1.0.py
+
 
 ########TEMPLATE########
 
