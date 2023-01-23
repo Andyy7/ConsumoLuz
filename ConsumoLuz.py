@@ -65,11 +65,18 @@ class VentanaPrincipal(tk.Tk):
         registros=self.consultar_bd(f"fecha, lectura FROM consumoLuz")
         ultima_lectura=registros[-1][1]
         ultima_fecha=registros[-1][0]
-        
-        self.etiqueta_ultima_lectura=ttk.Label(
-            self,
-            text=f"La última lectura registrada es {ultima_lectura} con fecha del {ultima_fecha}."
-        )
+
+        if ultima_lectura!=0:
+            self.etiqueta_ultima_lectura=ttk.Label(
+                self,
+                text=f"La última lectura registrada es {ultima_lectura} con fecha del {ultima_fecha}."
+            )
+
+        else:
+            self.etiqueta_ultima_lectura=ttk.Label(
+                self,
+                text=f"Es necesario inicializar la base de datos."
+            )
         self.etiqueta_ultima_lectura.place(x=20, y=55)
 
         self.etiqueta_consumo_actual=ttk.Label(
@@ -107,109 +114,115 @@ class VentanaPrincipal(tk.Tk):
     def calcular_bimestres(self):
         consulta="fecha FROM consumoLuz"
         todas_las_fechas=self.consultar_bd(consulta)
-        fechas=[]
-        for fecha in todas_las_fechas:
-            fechas.append(fecha[0])
+        if todas_las_fechas[-1][1]!=0:
+            fechas=[]
+            for fecha in todas_las_fechas:
+                fechas.append(fecha[0])
 
-        fecha_inicio=fechas[0]        
-        fecha_fin=self.calcular_fecha_fin(fecha_inicio)
-        año_fecha_int=int(fecha_fin[:4])     
-        mes_fecha_str=fecha_fin[5:7]
-        promedios={}
-
-        consumos_bimestrales=[]
-        consumos_año_periodo={}
-        if mes_fecha_str!="02":
-            cantidad=int(int(mes_fecha_str)/2)-1
-            for i in range(cantidad):
-                consumos_bimestrales.append(0)
-
-        ######## Inicio de la sección para calcular el consumo de los bimestres  cerrados o finalizados #########
-        while fecha_fin in fechas:
-            if mes_fecha_str=="02":
-                periodo=1
-            elif mes_fecha_str=="04":
-                periodo=2
-            elif mes_fecha_str=="06":
-                periodo=3
-            elif mes_fecha_str=="08":
-                periodo=4
-            elif mes_fecha_str=="10":
-                periodo=5
-            else:
-                periodo=6
-            
-            consulta=f"fecha, lectura FROM consumoLuz WHERE fecha BETWEEN '{fecha_inicio}' AND '{fecha_fin}'"
-            lecturas=self.consultar_bd(consulta)
-            consumos=[]
-
-            for i in range(len(lecturas)):
-                
-                if i<len(lecturas)-1:
-                    consumo=round(lecturas[i+1][1]-lecturas[i][1],1)
-                    consumos.append(consumo)
-
-            dias=(datetime.strptime(fecha_fin, '%Y-%m-%d')-datetime.strptime(fecha_inicio, '%Y-%m-%d')).days 
-            promedio=round(sum(consumos)/dias,1)
-            
-            if promedio!=0:          
-                promedios[f'{año_fecha_int}-{periodo}']=promedio
-                consumo_bimestral=round(sum(consumos))
-                consumos_bimestrales.append(consumo_bimestral)
-            
-            if periodo==6:
-               consumos_año_periodo[f'{año_fecha_int}']=consumos_bimestrales
-               consumos_bimestrales=[]
-
-            fecha_inicio=fecha_fin          
+            fecha_inicio=fechas[0]        
             fecha_fin=self.calcular_fecha_fin(fecha_inicio)
             año_fecha_int=int(fecha_fin[:4])     
             mes_fecha_str=fecha_fin[5:7]
-        ######## Fin de la sección para calcular el consumo de los bimestres  cerrados o finalizados#########
+            promedios={}
 
-        ######## Inicio de la sección para calcular el consumo del bimestre actual #########
-        if mes_fecha_str=="01" or mes_fecha_str=="02":
-            periodo=1
-        elif mes_fecha_str=="03" or mes_fecha_str=="04":
-            periodo=2
-        elif mes_fecha_str=="05" or mes_fecha_str=="06":
-            periodo=3
-        elif mes_fecha_str=="07" or mes_fecha_str=="08":
-            periodo=4
-        elif mes_fecha_str=="09" or mes_fecha_str=="10":
-            periodo=5
-        else:
-            periodo=6  
-   
-        fecha_fin=fechas[-1]
-        dias=(datetime.strptime(fecha_fin, '%Y-%m-%d')-datetime.strptime(fecha_inicio, '%Y-%m-%d')).days
+            consumos_bimestrales=[]
+            consumos_año_periodo={}
+            if mes_fecha_str!="02":
+                cantidad=int(int(mes_fecha_str)/2)-1
+                for i in range(cantidad):
+                    consumos_bimestrales.append(0)
 
-        consulta=f"fecha, lectura FROM consumoLuz WHERE fecha BETWEEN '{fecha_inicio}' AND '{fecha_fin}'"
-        lecturas=self.consultar_bd(consulta)
+            ######## Inicio de la sección para calcular el consumo de los bimestres  cerrados o finalizados #########
+            while fecha_fin in fechas:
+                if mes_fecha_str=="02":
+                    periodo=1
+                elif mes_fecha_str=="04":
+                    periodo=2
+                elif mes_fecha_str=="06":
+                    periodo=3
+                elif mes_fecha_str=="08":
+                    periodo=4
+                elif mes_fecha_str=="10":
+                    periodo=5
+                else:
+                    periodo=6
+                
+                consulta=f"fecha, lectura FROM consumoLuz WHERE fecha BETWEEN '{fecha_inicio}' AND '{fecha_fin}'"
+                lecturas=self.consultar_bd(consulta)
+                consumos=[]
 
-        consumo_actual=[]
+                for i in range(len(lecturas)):
+                    
+                    if i<len(lecturas)-1:
+                        consumo=round(lecturas[i+1][1]-lecturas[i][1],1)
+                        consumos.append(consumo)
 
-        for i in range(len(lecturas)):
-            if i<len(lecturas)-1:
-                consumo=round(lecturas[i+1][1]-lecturas[i][1],1)
-                consumo_actual.append(consumo)
+                dias=(datetime.strptime(fecha_fin, '%Y-%m-%d')-datetime.strptime(fecha_inicio, '%Y-%m-%d')).days 
+                promedio=round(sum(consumos)/dias,1)
+                
+                if promedio!=0:          
+                    promedios[f'{año_fecha_int}-{periodo}']=promedio
+                    consumo_bimestral=round(sum(consumos))
+                    consumos_bimestrales.append(consumo_bimestral)
+                
+                if periodo==6:
+                    consumos_año_periodo[f'{año_fecha_int}']=consumos_bimestrales
+                    consumos_bimestrales=[]
+
+                fecha_inicio=fecha_fin          
+                fecha_fin=self.calcular_fecha_fin(fecha_inicio)
+                año_fecha_int=int(fecha_fin[:4])     
+                mes_fecha_str=fecha_fin[5:7]
+            ######## Fin de la sección para calcular el consumo de los bimestres  cerrados o finalizados#########
+
+            ######## Inicio de la sección para calcular el consumo del bimestre actual #########
+            if mes_fecha_str=="01" or mes_fecha_str=="02":
+                periodo=1
+            elif mes_fecha_str=="03" or mes_fecha_str=="04":
+                periodo=2
+            elif mes_fecha_str=="05" or mes_fecha_str=="06":
+                periodo=3
+            elif mes_fecha_str=="07" or mes_fecha_str=="08":
+                periodo=4
+            elif mes_fecha_str=="09" or mes_fecha_str=="10":
+                periodo=5
+            else:
+                periodo=6  
+    
+            fecha_fin=fechas[-1]
+            dias=(datetime.strptime(fecha_fin, '%Y-%m-%d')-datetime.strptime(fecha_inicio, '%Y-%m-%d')).days
+
+            consulta=f"fecha, lectura FROM consumoLuz WHERE fecha BETWEEN '{fecha_inicio}' AND '{fecha_fin}'"
+            lecturas=self.consultar_bd(consulta)
+
+            consumo_actual=[]
+
+            for i in range(len(lecturas)):
+                if i<len(lecturas)-1:
+                    consumo=round(lecturas[i+1][1]-lecturas[i][1],1)
+                    consumo_actual.append(consumo)
+                
+            promedio_actual=round(sum(consumo_actual)/(dias+1),1)
+            consumos_bimestrales.append(round(sum(consumo_actual)))
+
+            if promedio!=0:     
+                promedios[f'{año_fecha_int}-{periodo}']=promedio_actual 
+                consumo_bimestral_actual=round(sum(consumo_actual)) 
             
-        promedio_actual=round(sum(consumo_actual)/(dias+1),1)
-        consumos_bimestrales.append(round(sum(consumo_actual)))
+            if periodo!=6:
+                cantidad=6-periodo
+                for i in range(cantidad):
+                    consumos_bimestrales.append(0)
 
-        if promedio!=0:     
-            promedios[f'{año_fecha_int}-{periodo}']=promedio_actual 
-            consumo_bimestral_actual=round(sum(consumo_actual)) 
-        
-        if periodo!=6:
-            cantidad=6-periodo
-            for i in range(cantidad):
-                consumos_bimestrales.append(0)
+            consumos_año_periodo[f'{año_fecha_int}']=consumos_bimestrales
+            self.graficar(consumos_año_periodo)
+            datos=[consumo_bimestral_actual,promedio_actual]
+            return datos
 
-        consumos_año_periodo[f'{año_fecha_int}']=consumos_bimestrales
-        self.graficar(consumos_año_periodo)
-        datos=[consumo_bimestral_actual,promedio_actual]
-        return datos
+        else:
+            datos=[0,0]
+            return datos
+
 
     def consultar_bd(self,consulta):
         conn=sqlite3.connect(f'Registro_luz.db')
@@ -217,7 +230,11 @@ class VentanaPrincipal(tk.Tk):
         cursor.execute(F"SELECT {consulta}")
         salida=cursor.fetchall()
         conn.close()
-        return salida
+        if not salida:
+            salida=[("0",0)]
+            return salida
+        else:
+            return salida
  
     def calcular_fecha_fin(self,dato):
         # La fecha esta en formato str, realizo un slicing y obtengo los días que inician las lecturas, las cuales coiciden con el corte bimestral de los consumos.
