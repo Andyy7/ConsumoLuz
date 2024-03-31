@@ -15,12 +15,8 @@ class VentanaPrincipal(tk.Tk):
         self.config(width=1040,height=670)
         self.title("Registro Consumo Luz")
 
-        icono_chico_datos="iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADr0AAA69AUf7kK0AAAI6SURBVDhPfZJNaBNBFMffbJakbrJJGk3jNmHX3cav4NfBYz2kFhs8tFfx4MGDhV4riCdPHkTw7MWDiKLgoVAqIlbBY6QIoi1KSEyItTWNSWzTxG12pjvTSdm1oT+Ynfm/L968WdgPPaBfMALGMJc9EfjOUENqvy5p17kETLBoEUvkEgy/elGX9WNcMlwFSo1Szd5iqqQqVLeb7azZNLP0rIAiEUCZwnrhO9VdEP0kA8lobiNXYRYAD/3ofj3t85I0PZsmfpdvlt4nIOErQ7lFbYPy4MHl9eUqK2C3NkIImiAYPSBtspo6S57fnOpMnEhimH3jAZ8P4MWMZyb32XsF9+EYEaxpQMJsoVl4ywpwPElIioeOmHdfPjKn44cJM9b/IprMijx8LN7/WbTu2F1s2a4O9TtnYMUhbo2PWTe6yZRwkMDktQ78riAYS1uTzmSKa4j5A/kBLQEyly7On8MgIAjaA45yE8NVQG7Ja79WgQ3pf0aGLQj4YTO6GV3jJoarwCIsmq/mhSf1hnM0O1DbnO1bgAV6hV3Ykznx4IEPS99IZvySpSBeB2OAqdveT0s56Wq1VTV3rPugSVom+1Qh5GuMrY/PFGJI2mXudrG3Vxujz1BH01tfjg5h5s/lBfJ6XjhT/Ff8wQIc7LkCJSJGgr5I6lStfby8UtdKlXqoUF35M1fr1Bo8ZJeeHWghLSx0hHsIEYNq+y/NYxHfKjaKdRbgwPUKXWhgMBwMnTydGqUrFJb7eyUDAGwDiJrU0NO+Hg8AAAAASUVORK5CYII="
-
-        icono_grande_datos="iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADr0AAA69AUf7kK0AAASoSURBVFhHpZdtbBRFGMefmbtr73avb1EEyt3tvdHW0xRNAU2t1ITwoYkSTGMiRCPV+lZFCQYMiR/84AejEROiUUNiPxgsfABfwIYrsVaFxpcaBA562vaud1ypoFBqb+/au90dZ3tDw8nd3m75JZOd5z8zO88+8+zsLNwKHl54zcsL25m5KDC7LpZqQgurLwpNBwROuNfNu19lpmE8vKeRlg3MLIimAxZsSQAhu32cq4lJ/4cQgmgQbkYAwUpbDyCkVDCpIJoOjCZH/wZAuxSE97VCq5nJC2BQDhJMDjIzD8zDm9S/UCQZO8ykxUOTLejm3E8xsySCXWjw8O6Lfrt/CZNujcCSgH05LOeYeR2Tw+ZY4bQ5a9V6TsrhAIfNV+nzM1MTxK5QZ6+7fY7M3R0TYwNMKgT22D3tRFGeRQg9WFlBrKr47wxK03D/CHSposnoISoVzAsVX4WrOYthOD4dn1LtBQfUsCEFHaXVGCb49Ug6MpRryeG3+R0SyvYE6khL5xMSPNSsQE1Vbp6pawgGBjHs22+G8J/oBzORt4ykExPzjQz6Rt2DEbxNqw0KgrZYMjas6gtJSIUwl+IC9Mm+UJB8lK75G6wJvFavS8bZwe3PyS1ffzYHj7bJ85Mf+NIMd7bY4MmXy2DyEoKejzKwrVNeJ2HTSZ/V52TDwcMJu+mT9tFq0CRa6q9PrrIQgRupv62+QhKl6rHZsQvUNLl5YXBnl7S2a6uU63ADKRr8c39g+PywGX79HcPH72Rg4CSGPZ9YfoqK4y20i+wsd/osnOWfyFRkOjfKAB7O9cxjzS6ihJYSck679O6tJWucAon1LSPt97sIDftWdpuilNyKCcIvvNQhASoYq3za1svQ8bgEb+2xQFduzIusqSiaDriqXDWcjTQ9sFZmSmme3izB0BkMfo8CtnJY7a3xVrGmgmhvxVnwCg6CzDftgcUpLwdYs0qBUBiDawXB8pzsYU0F0XRAISZsztti9HFXgwKq0/MFiOYdNB2QkZyYmET0m8IEnbzSKcGGdTJM/EXHIrP6JhVF04F4Kj559RqMqOE0ytlhDNPTKBwRI5eZVJCSd6bJ3/1pj4EkYKhjaOC6mVmUkg6U2awffHUMx/tP6E8Gte+RoGk8nUp/yKSilLzrlfSVTJWp+udvT5g239ekWGqXaifE0GkMz+8sS2Yz+OGElBhnclF0bC851KPVsjuUY/2HZrGVvmqFmJ0DWN9uJRcvobbx1HiQyZrozq6oGD0+eRn19g0UD9rx701A+wT1Tq5iKL0RoOAvp4oPUT9GChDdk6sYcgCIHI1dwHB1ChUssQQGeqaIsN660J0DKvSMsIp+YHpptZjjCibKxrFU/Ddml8SQAwEIlImcuIUeWiqZlAc9o8/wKX7/eTifYVJJjEWAd29b2bByb+PqRqbkc2boNIyGR3ZExdj7TCqJMQfs7lb6G/INjQDPpDxoBESahI/Qg+13TCqJIQdU1CO3xW7qIArK++NBmMxkk3J3AhL0kKYfww7Qn5QddYH69xqb8pchdCoEw2fDu+ge8C6TdGHYAXUZ6EHhCF2GvAioCYgR2RQR4/1M0gHAf/9Vtp77nCX7AAAAAElFTkSuQmCC"
-
-        icono_chico=tk.PhotoImage(data=b64decode(icono_chico_datos))
-        icono_grande=tk.PhotoImage(data=b64decode(icono_grande_datos))
+        icono_chico=tk.PhotoImage(data=b64decode(self.icono_chico()))
+        icono_grande=tk.PhotoImage(data=b64decode(self.icono_grande()))
         self.iconphoto(True,icono_grande,icono_chico)
         
         #Verifica que exista la base de datos, de lo contrario llama a la funcion que se ocupa de crearla.
@@ -91,10 +87,20 @@ class VentanaPrincipal(tk.Tk):
 
         self.etiqueta_promedio_actual=ttk.Label(
             self,
-            text=f"El promedio actual es de {promedio_actual} kWh."
+            text=f"El consumo promedio actual es de {promedio_actual} kWh."
         )
         self.etiqueta_promedio_actual.place(x=20, y=105)
 
+    def icono_chico(self):
+        icono="iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADr0AAA69AUf7kK0AAAI6SURBVDhPfZJNaBNBFMffbJakbrJJGk3jNmHX3cav4NfBYz2kFhs8tFfx4MGDhV4riCdPHkTw7MWDiKLgoVAqIlbBY6QIoi1KSEyItTWNSWzTxG12pjvTSdm1oT+Ynfm/L968WdgPPaBfMALGMJc9EfjOUENqvy5p17kETLBoEUvkEgy/elGX9WNcMlwFSo1Szd5iqqQqVLeb7azZNLP0rIAiEUCZwnrhO9VdEP0kA8lobiNXYRYAD/3ofj3t85I0PZsmfpdvlt4nIOErQ7lFbYPy4MHl9eUqK2C3NkIImiAYPSBtspo6S57fnOpMnEhimH3jAZ8P4MWMZyb32XsF9+EYEaxpQMJsoVl4ywpwPElIioeOmHdfPjKn44cJM9b/IprMijx8LN7/WbTu2F1s2a4O9TtnYMUhbo2PWTe6yZRwkMDktQ78riAYS1uTzmSKa4j5A/kBLQEyly7On8MgIAjaA45yE8NVQG7Ja79WgQ3pf0aGLQj4YTO6GV3jJoarwCIsmq/mhSf1hnM0O1DbnO1bgAV6hV3Ykznx4IEPS99IZvySpSBeB2OAqdveT0s56Wq1VTV3rPugSVom+1Qh5GuMrY/PFGJI2mXudrG3Vxujz1BH01tfjg5h5s/lBfJ6XjhT/Ff8wQIc7LkCJSJGgr5I6lStfby8UtdKlXqoUF35M1fr1Bo8ZJeeHWghLSx0hHsIEYNq+y/NYxHfKjaKdRbgwPUKXWhgMBwMnTydGqUrFJb7eyUDAGwDiJrU0NO+Hg8AAAAASUVORK5CYII="
+
+        return icono
+
+    def icono_grande(self):
+        icono="iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADr0AAA69AUf7kK0AAASoSURBVFhHpZdtbBRFGMefmbtr73avb1EEyt3tvdHW0xRNAU2t1ITwoYkSTGMiRCPV+lZFCQYMiR/84AejEROiUUNiPxgsfABfwIYrsVaFxpcaBA562vaud1ypoFBqb+/au90dZ3tDw8nd3m75JZOd5z8zO88+8+zsLNwKHl54zcsL25m5KDC7LpZqQgurLwpNBwROuNfNu19lpmE8vKeRlg3MLIimAxZsSQAhu32cq4lJ/4cQgmgQbkYAwUpbDyCkVDCpIJoOjCZH/wZAuxSE97VCq5nJC2BQDhJMDjIzD8zDm9S/UCQZO8ykxUOTLejm3E8xsySCXWjw8O6Lfrt/CZNujcCSgH05LOeYeR2Tw+ZY4bQ5a9V6TsrhAIfNV+nzM1MTxK5QZ6+7fY7M3R0TYwNMKgT22D3tRFGeRQg9WFlBrKr47wxK03D/CHSposnoISoVzAsVX4WrOYthOD4dn1LtBQfUsCEFHaXVGCb49Ug6MpRryeG3+R0SyvYE6khL5xMSPNSsQE1Vbp6pawgGBjHs22+G8J/oBzORt4ykExPzjQz6Rt2DEbxNqw0KgrZYMjas6gtJSIUwl+IC9Mm+UJB8lK75G6wJvFavS8bZwe3PyS1ffzYHj7bJ85Mf+NIMd7bY4MmXy2DyEoKejzKwrVNeJ2HTSZ/V52TDwcMJu+mT9tFq0CRa6q9PrrIQgRupv62+QhKl6rHZsQvUNLl5YXBnl7S2a6uU63ADKRr8c39g+PywGX79HcPH72Rg4CSGPZ9YfoqK4y20i+wsd/osnOWfyFRkOjfKAB7O9cxjzS6ihJYSck679O6tJWucAon1LSPt97sIDftWdpuilNyKCcIvvNQhASoYq3za1svQ8bgEb+2xQFduzIusqSiaDriqXDWcjTQ9sFZmSmme3izB0BkMfo8CtnJY7a3xVrGmgmhvxVnwCg6CzDftgcUpLwdYs0qBUBiDawXB8pzsYU0F0XRAISZsztti9HFXgwKq0/MFiOYdNB2QkZyYmET0m8IEnbzSKcGGdTJM/EXHIrP6JhVF04F4Kj559RqMqOE0ytlhDNPTKBwRI5eZVJCSd6bJ3/1pj4EkYKhjaOC6mVmUkg6U2awffHUMx/tP6E8Gte+RoGk8nUp/yKSilLzrlfSVTJWp+udvT5g239ekWGqXaifE0GkMz+8sS2Yz+OGElBhnclF0bC851KPVsjuUY/2HZrGVvmqFmJ0DWN9uJRcvobbx1HiQyZrozq6oGD0+eRn19g0UD9rx701A+wT1Tq5iKL0RoOAvp4oPUT9GChDdk6sYcgCIHI1dwHB1ChUssQQGeqaIsN660J0DKvSMsIp+YHpptZjjCibKxrFU/Ddml8SQAwEIlImcuIUeWiqZlAc9o8/wKX7/eTifYVJJjEWAd29b2bByb+PqRqbkc2boNIyGR3ZExdj7TCqJMQfs7lb6G/INjQDPpDxoBESahI/Qg+13TCqJIQdU1CO3xW7qIArK++NBmMxkk3J3AhL0kKYfww7Qn5QddYH69xqb8pchdCoEw2fDu+ge8C6TdGHYAXUZ6EHhCF2GvAioCYgR2RQR4/1M0gHAf/9Vtp77nCX7AAAAAElFTkSuQmCC"
+
+        return icono
+    
     def graficar(self,consumos_año_período):
         claves=list(consumos_año_período.keys())
         n = 6       # Cantidad de bimestres
@@ -122,7 +128,7 @@ class VentanaPrincipal(tk.Tk):
             for fecha in todas_las_fechas:
                 fechas.append(fecha[0])
 
-            fecha_inicio=fechas[0]        
+            fecha_inicio=fechas[0]      
             fecha_fin=self.calcular_fecha_fin(fecha_inicio)
             año_fecha_int=int(fecha_fin[:4])     
             mes_fecha_str=fecha_fin[5:7]
@@ -164,7 +170,8 @@ class VentanaPrincipal(tk.Tk):
                     consumos_año_período[f'{año_fecha_int}']=consumos_bimestrales
                     consumos_bimestrales=[]
 
-                fecha_inicio=fecha_fin          
+
+                fecha_inicio=self.calcular_fecha_inicio(fecha_fin)          
                 fecha_fin=self.calcular_fecha_fin(fecha_inicio)
                 año_fecha_int=int(fecha_fin[:4])     
                 mes_fecha_str=fecha_fin[5:7]
@@ -175,6 +182,7 @@ class VentanaPrincipal(tk.Tk):
             período=self.período(mes_fecha_str)   
 
             fecha_fin=fechas[-1]
+
             días=(datetime.strptime(fecha_fin, '%Y-%m-%d')-datetime.strptime(fecha_inicio, '%Y-%m-%d')).days
 
             consulta=f"fecha, lectura FROM consumoLuz WHERE fecha BETWEEN '{fecha_inicio}' AND '{fecha_fin}'"
@@ -251,7 +259,15 @@ class VentanaPrincipal(tk.Tk):
             return salida
         else:
             return salida
- 
+
+    def calcular_fecha_inicio(self,dato):
+        # La fecha esta en formato str, realizo un slicing y obtengo los días que inician las lecturas, las cuales coiciden con el corte bimestral de los consumos.
+        
+        mes_fecha_str=dato[5:7]
+        año_fecha_int=int(dato[:4])
+
+        return f"{año_fecha_int}-{mes_fecha_str}-24"
+     
     def calcular_fecha_fin(self,dato):
         # La fecha esta en formato str, realizo un slicing y obtengo los días que inician las lecturas, las cuales coiciden con el corte bimestral de los consumos.
         # dia_fecha=dato[8:]
@@ -382,7 +398,7 @@ class VentanaPrincipal(tk.Tk):
                             text=f"El consumo actual es de {consumo_actual} kWh."
                         )
                         self.etiqueta_promedio_actual.config(
-                            text=f"El promedio actual es de {promedio_actual} kWh."
+                            text=f"El consumo promedio actual es de {promedio_actual} kWh."
                         )
 
     def crear_base_datos(self):
