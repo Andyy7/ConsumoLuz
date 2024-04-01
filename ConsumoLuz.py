@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import sqlite3
 import tkinter as tk
 from tkinter import ttk, messagebox
@@ -58,6 +58,14 @@ class VentanaPrincipal(tk.Tk):
         self.boton_agregar_lectura.place(x=520,y=20,width=70, height=20)
         #Fin de la sección para agregar lecturas nuevas.
 
+        self.boton_agregar_lectura=tk.Button(
+            self,
+            text="Eliminar última lectura",
+            command=self.eliminar_lectura
+        )
+        self.boton_agregar_lectura.place(x=610,y=20,width=145, height=20)
+
+
         consumo_promedio=self.calcular_bimestres()
         consumo_actual=consumo_promedio[0]
         promedio_actual=consumo_promedio[1]
@@ -106,16 +114,17 @@ class VentanaPrincipal(tk.Tk):
         n = 6       # Cantidad de bimestres
         x = np.arange(n)+1
         width = 0.2
-        f=Figure(figsize=(10,5), dpi=100)
+        f=Figure(figsize=(10,5), dpi=100,layout='tight')
         a=f.add_subplot()
         a.bar(x - width*(1+1/2), consumos_año_período[claves[-4]], width=width, label=claves[-4])
         a.bar(x - width/2, consumos_año_período[claves[-3]], width=width, label=claves[-3])
         a.bar(x + width/2, consumos_año_período[claves[-2]], width=width, label=claves[-2])
         a.bar(x + width*(1+1/2), consumos_año_período[claves[-1]], width=width, label=claves[-1])
-        a.legend(loc='best')
+        a.legend(loc=(1.01,0.795))
         a.set_xlabel('Período')
         a.set_ylabel('Consumo en kWh')
-        
+        a.grid(axis='y', color='grey', linewidth=0.5)
+
         canvas=FigureCanvasTkAgg(f,self)
         canvas.draw()
         canvas.get_tk_widget().place(x=20,y=150)   
@@ -226,6 +235,7 @@ class VentanaPrincipal(tk.Tk):
                 self.graficar(consumos_año_período)
             
             datos=[consumo_bimestral_actual,promedio_actual]
+
             return datos
 
         else:
@@ -259,6 +269,46 @@ class VentanaPrincipal(tk.Tk):
             return salida
         else:
             return salida
+
+    def eliminar_lectura(self):
+        consulta="fecha, lectura FROM consumoLuz"
+        salida=self.consultar_bd(consulta)
+        última_lectura=salida[-1][1]
+        if última_lectura!=0:
+            conn=sqlite3.connect(f'Registro_luz.db')
+            cursor=conn.cursor()
+            cursor.execute("DELETE FROM consumoLuz WHERE ROWID IN (SELECT max(ROWID) FROM consumoLuz)")
+            conn.commit()
+            conn.close()
+            self.actualizar_pantalla()
+
+        else:
+            messagebox.showwarning(
+                title="Advertencia",
+                message="No existe ninguna lectura para eliminar."
+            )
+
+    def actualizar_pantalla(self):
+        self.caja_fecha.delete(0,tk.END)
+        self.caja_lectura.delete(0,tk.END)     
+
+        consumo_promedio=self.calcular_bimestres()
+        consumo_actual=consumo_promedio[0]
+        promedio_actual=consumo_promedio[1]
+
+        registros=self.consultar_bd(f"fecha, lectura FROM consumoLuz")
+        última_lectura=registros[-1][1]
+        última_fecha=registros[-1][0]
+
+        self.etiqueta_última_lectura.config(
+            text=f"La última lectura registrada es {última_lectura} con fecha del {última_fecha}."
+        )
+        self.etiqueta_consumo_actual.config(
+            text=f"El consumo actual es de {consumo_actual} kWh."
+        )
+        self.etiqueta_promedio_actual.config(
+            text=f"El consumo promedio actual es de {promedio_actual} kWh."
+        )       
 
     def calcular_fecha_inicio(self,dato):
         # La fecha esta en formato str, realizo un slicing y obtengo los días que inician las lecturas, las cuales coiciden con el corte bimestral de los consumos.
@@ -384,22 +434,7 @@ class VentanaPrincipal(tk.Tk):
                         conn.commit()
                         conn.close() 
 
-                        self.caja_fecha.delete(0,tk.END)
-                        self.caja_lectura.delete(0,tk.END)     
-
-                        consumo_promedio=self.calcular_bimestres()
-                        consumo_actual=consumo_promedio[0]
-                        promedio_actual=consumo_promedio[1]
-                
-                        self.etiqueta_última_lectura.config(
-                            text=f"La última lectura registrada es {lectura} con fecha del {fecha}."
-                        )
-                        self.etiqueta_consumo_actual.config(
-                            text=f"El consumo actual es de {consumo_actual} kWh."
-                        )
-                        self.etiqueta_promedio_actual.config(
-                            text=f"El consumo promedio actual es de {promedio_actual} kWh."
-                        )
+                        self.actualizar_pantalla()
 
     def crear_base_datos(self):
         conn=sqlite3.connect(f'Registro_luz.db')
@@ -407,6 +442,10 @@ class VentanaPrincipal(tk.Tk):
 
         try:
             cursor.execute("CREATE TABLE consumoLuz (fecha DATE, lectura FLOAT)")
+            fecha=str(datetime.now()+timedelta(days=-1))[:10]
+            lectura=0
+            cursor.execute("INSERT INTO consumoLuz VALUES (?, ?)", (fecha, lectura))
+            conn.commit()
         except sqlite3.OperationalError:
             # silenciar la excepción
             pass
