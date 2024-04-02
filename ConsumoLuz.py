@@ -152,7 +152,7 @@ class VentanaPrincipal(tk.Tk):
                 cantidad=período-1
                 for i in range(cantidad):
                     consumos_bimestrales.append(0)
-                    
+
             ######## Inicio Ciclo While para calcular el consumo de los bimestres  cerrados o finalizados #########
             while fecha_fin in fechas:
                 período=self.período(fecha_inicio)
@@ -469,7 +469,7 @@ class VentanaPrincipal(tk.Tk):
             if dato>fecha_fin:
                 messagebox.showwarning(
                     title="Advertencia",
-                    message="Ingreso de fecha no válido. No puede ser una fecha superior correspondiente al fin del período. Los períodos cierran los días 24 de los meses pares."
+                    message="Ingreso de fecha no válido. No se puede agregar una fecha superior correspondiente al fin del período. Los períodos cierran el día 24 de los meses pares."
                 )
                 return False
             else:
