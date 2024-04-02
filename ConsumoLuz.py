@@ -132,31 +132,30 @@ class VentanaPrincipal(tk.Tk):
     def calcular_bimestres(self):
         consulta="fecha, lectura FROM consumoLuz"
         todas_las_fechas=self.consultar_bd(consulta)
+
         if todas_las_fechas[-1][1]!=0:
             fechas=[]
             for fecha in todas_las_fechas:
                 fechas.append(fecha[0])
 
-            fecha_inicio=fechas[0]      
+            fecha_inicio=self.calcular_fecha_inicio(fechas[0]) 
             fecha_fin=self.calcular_fecha_fin(fecha_inicio)
+
             año_fecha_int=int(fecha_fin[:4])     
-            mes_fecha_str=fecha_fin[5:7]
             promedios={}
 
             consumos_bimestrales=[]
             consumos_año_período={}
-            período=self.período(mes_fecha_str) 
+            período=self.período(fecha_inicio) 
 
             if período!=1:
                 cantidad=período-1
-
                 for i in range(cantidad):
-
                     consumos_bimestrales.append(0)
-
+                    
             ######## Inicio Ciclo While para calcular el consumo de los bimestres  cerrados o finalizados #########
             while fecha_fin in fechas:
-                período=self.período(mes_fecha_str)
+                período=self.período(fecha_inicio)
                 consulta=f"fecha, lectura FROM consumoLuz WHERE fecha BETWEEN '{fecha_inicio}' AND '{fecha_fin}'"
                 lecturas=self.consultar_bd(consulta)
                 consumos=[]
@@ -179,21 +178,17 @@ class VentanaPrincipal(tk.Tk):
                     consumos_año_período[f'{año_fecha_int}']=consumos_bimestrales
                     consumos_bimestrales=[]
 
-
                 fecha_inicio=self.calcular_fecha_inicio(fecha_fin)          
                 fecha_fin=self.calcular_fecha_fin(fecha_inicio)
-                año_fecha_int=int(fecha_fin[:4])     
-                mes_fecha_str=fecha_fin[5:7]
+                año_fecha_int=int(fecha_fin[:4])
                 
             ######## Fin Ciclo While para calcular el consumo de los bimestres finalizados#########
 
             ######## Inicia la sección para calcular el consumo del bimestre actual #########
-            período=self.período(mes_fecha_str)   
 
-            fecha_fin=fechas[-1]
+            período=self.período(fecha_inicio) 
 
             días=(datetime.strptime(fecha_fin, '%Y-%m-%d')-datetime.strptime(fecha_inicio, '%Y-%m-%d')).days
-
             consulta=f"fecha, lectura FROM consumoLuz WHERE fecha BETWEEN '{fecha_inicio}' AND '{fecha_fin}'"
             lecturas=self.consultar_bd(consulta)
 
@@ -203,20 +198,26 @@ class VentanaPrincipal(tk.Tk):
                 if i<len(lecturas)-1:
                     consumo=round(lecturas[i+1][1]-lecturas[i][1],1)
                     consumo_actual.append(consumo)
-                
+
             promedio_actual=round(sum(consumo_actual)/(días+1),1)
             consumos_bimestrales.append(round(sum(consumo_actual)))
 
             if promedio_actual!=0:     
                 promedios[f'{año_fecha_int}-{período}']=promedio_actual 
                 consumo_bimestral_actual=round(sum(consumo_actual)) 
+            
+            else:
+                promedios[f'{año_fecha_int}-{período}']=0
+                consumo_bimestral_actual=0
 
             if período!=6:
                 cantidad=6-período
                 for i in range(cantidad):
                     consumos_bimestrales.append(0)
 
+
             consumos_año_período[f'{año_fecha_int}']=consumos_bimestrales
+
             ######## Fin de la sección para calcular el consumo del bimestre actual #########
 
             ######## Inicio de la sección verificar si faltan datos para poder graficar #########
@@ -242,20 +243,59 @@ class VentanaPrincipal(tk.Tk):
             datos=[0,0]
             return datos
 
-    def período(self,mes_fecha_str):
-        if mes_fecha_str=="01" or mes_fecha_str=="02":
+    def período(self,dato):
+
+        mes_fecha_str=dato[5:7]
+        día_int=int(dato[8:])
+
+        if mes_fecha_str=="01":
             período=1
-        elif mes_fecha_str=="03" or mes_fecha_str=="04":
-            período=2
-        elif mes_fecha_str=="05" or mes_fecha_str=="06":
-            período=3
-        elif mes_fecha_str=="07" or mes_fecha_str=="08":
-            período=4
-        elif mes_fecha_str=="09" or mes_fecha_str=="10":
-            período=5
-        else:
-            período=6
+        elif mes_fecha_str=="02":
+            if día_int<24:
+                período=1
+            else:
+                período=2
         
+        elif mes_fecha_str=="03":
+            período=2
+        elif mes_fecha_str=="04":
+            if día_int<24:
+                período=2
+            else:
+                período=3
+
+        elif mes_fecha_str=="05":
+            período=3
+        elif mes_fecha_str=="06":
+            if día_int<24:
+                período=3
+            else:
+                período=4
+        
+        elif mes_fecha_str=="07":
+            período=4
+        elif mes_fecha_str=="08":
+            if día_int<24:
+                período=4
+            else:
+                período=5
+        
+        elif mes_fecha_str=="09":
+            período=5
+        elif mes_fecha_str=="10":
+            if día_int<24:
+                período=5
+            else:
+                período=6
+
+        elif mes_fecha_str=="11":
+            período=6
+        elif mes_fecha_str=="12":
+            if día_int<24:
+                período=6
+            else:
+                período=1
+
         return período
 
     def consultar_bd(self,consulta):
@@ -311,33 +351,55 @@ class VentanaPrincipal(tk.Tk):
         )       
 
     def calcular_fecha_inicio(self,dato):
-        # La fecha esta en formato str, realizo un slicing y obtengo los días que inician las lecturas, las cuales coiciden con el corte bimestral de los consumos.
-        
-        mes_fecha_str=dato[5:7]
+        # La fecha esta en formato str, realizo un slicing y establesco el día en que inician las lecturas.
+        mes_fecha_int=int(dato[5:7])
         año_fecha_int=int(dato[:4])
+        p=self.período(dato)
 
-        return f"{año_fecha_int}-{mes_fecha_str}-24"
+        if p==1:
+            if mes_fecha_int==12:
+                fecha=f"{año_fecha_int}-12-24"
+            else:
+                fecha=f"{año_fecha_int-1}-12-24"
+        elif p==2:
+            fecha=f"{año_fecha_int}-02-24"
+        elif p==3:
+            fecha=f"{año_fecha_int}-04-24"
+        elif p==4:
+            fecha=f"{año_fecha_int}-06-24"
+        elif p==5:
+            fecha=f"{año_fecha_int}-08-24"
+        elif p==6:
+            fecha=f"{año_fecha_int}-10-24"
+
+        return fecha
      
     def calcular_fecha_fin(self,dato):
         # La fecha esta en formato str, realizo un slicing y obtengo los días que inician las lecturas, las cuales coiciden con el corte bimestral de los consumos.
-        # dia_fecha=dato[8:]
+        día_fecha_int=int(dato[8:])
         mes_fecha_int=int(dato[5:7])
         año_fecha_int=int(dato[:4])
-        
+
         if mes_fecha_int%2==0:
             if mes_fecha_int<12:
                 mes_fecha_int+=2
                 mes_fecha_str=str(mes_fecha_int)
                 if mes_fecha_int<10:
                     mes_fecha_str="0"+str(mes_fecha_int)
+            elif día_fecha_int<24:
+                mes_fecha_str="12"
             else:
                 mes_fecha_str="02"
                 año_fecha_int+=1
             
         else:
-            mes_fecha_str=dato[5:7]
+            if mes_fecha_int<12:
+                mes_fecha_int+=1
+                mes_fecha_str=str(mes_fecha_int)
+                if mes_fecha_int<10:
+                    mes_fecha_str="0"+str(mes_fecha_int)
 
-        return f"{año_fecha_int}-{mes_fecha_str}-25"
+        return f"{año_fecha_int}-{mes_fecha_str}-24"
 
     def validar_sucesion_lectura(self,dato):
         # Se realiza una prueba para saber si la lectura cumple con la sucesión de lecturas anteriores.
@@ -395,6 +457,27 @@ class VentanaPrincipal(tk.Tk):
                 chequeo.append(letra.isdecimal())
         return all(chequeo)
 
+    def validar_rango_fecha(self,dato):
+        registros=self.consultar_bd(f"fecha, lectura FROM consumoLuz")
+        última_lectura=float(registros[-1][1])
+        if última_lectura!=0:
+
+            fecha_fin=self.calcular_fecha_fin(registros[-1][0])
+
+            fecha_fin=datetime.strptime(fecha_fin, '%Y-%m-%d')
+            dato=datetime.strptime(dato, '%Y-%m-%d')
+            if dato>fecha_fin:
+                messagebox.showwarning(
+                    title="Advertencia",
+                    message="Ingreso de fecha no válido. No puede ser una fecha superior correspondiente al fin del período. Los períodos cierran los días 24 de los meses pares."
+                )
+                return False
+            else:
+                dato=dato.date()
+                return dato
+        else:
+            return dato
+
     def verificar_vacio(self, dato):
         dato_verificar=dato
         if dato_verificar=="":
@@ -428,13 +511,15 @@ class VentanaPrincipal(tk.Tk):
                 if fecha!=None:
                     fecha=self.validar_sucesion_fecha(fecha)
                     if fecha!=False:
-                        conn=sqlite3.connect(f'Registro_luz.db')
-                        cursor=conn.cursor()
-                        cursor.execute("INSERT INTO consumoLuz VALUES (?, ?)", (fecha, lectura))
-                        conn.commit()
-                        conn.close() 
+                        fecha=self.validar_rango_fecha(self.caja_fecha.get())
+                        if fecha!=False:
+                            conn=sqlite3.connect(f'Registro_luz.db')
+                            cursor=conn.cursor()
+                            cursor.execute("INSERT INTO consumoLuz VALUES (?, ?)", (fecha, lectura))
+                            conn.commit()
+                            conn.close() 
 
-                        self.actualizar_pantalla()
+                            self.actualizar_pantalla()
 
     def crear_base_datos(self):
         conn=sqlite3.connect(f'Registro_luz.db')
