@@ -185,13 +185,11 @@ class VentanaPrincipal(tk.Tk):
             ######## Fin Ciclo While para calcular el consumo de los bimestres finalizados#########
 
             ######## Inicia la sección para calcular el consumo del bimestre actual #########
-
+            fecha_fin_ba=todas_las_fechas[-1][0]
             período=self.período(fecha_inicio) 
-
-            días=(datetime.strptime(fecha_fin, '%Y-%m-%d')-datetime.strptime(fecha_inicio, '%Y-%m-%d')).days
-            consulta=f"fecha, lectura FROM consumoLuz WHERE fecha BETWEEN '{fecha_inicio}' AND '{fecha_fin}'"
+            días=(datetime.strptime(fecha_fin_ba, '%Y-%m-%d')-datetime.strptime(fecha_inicio, '%Y-%m-%d')).days
+            consulta=f"fecha, lectura FROM consumoLuz WHERE fecha BETWEEN '{fecha_inicio}' AND '{fecha_fin_ba}'"
             lecturas=self.consultar_bd(consulta)
-
             consumo_actual=[]
 
             for i in range(len(lecturas)):
